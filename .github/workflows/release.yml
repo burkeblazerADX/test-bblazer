@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - modules/**
 
 defaults:
   run:
@@ -26,4 +24,3 @@ jobs:
         id: release-please
         with:
           token: ${{ secrets.RP_GH_TOKEN }}
-          release-type: terraform-module
