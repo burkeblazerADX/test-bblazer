@@ -1,5 +1,6 @@
 {
   ".github": "0.0.0",
   "packages/rabbitmq-cluster": "0.0.0",
-  "packages/rabbitmq-cluster-operator": "0.0.0"
+  "packages/rabbitmq-cluster-operator": "0.0.0",
+  "modules/rabbitmq-cluster": "0.1.0"
 }
