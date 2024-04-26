@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": false,
+  "include-v-in-tag": true,
+  "separate-pull-requests": true,
+  "sequential-calls": true,
+  "packages": {
+    ".github": {
+      "package-name": "workflows",
+      "release-type": "simple"
+    },
+    "packages/rabbitmq-cluster": {
+      "package-name": "rabbitmq-cluster",
+      "release-type": "terraform-module"
+    },
+    "packages/rabbitmq-cluster-operator": {
+      "package-name": "rabbitmq-cluster-operator",
+      "release-type": "terraform-module"
+    }
+  },
+  "changelog-sections": [
+    { "type": "feat", "section": "Features", "hidden": false },
+    { "type": "fix", "section": "Bug Fixes", "hidden": false },
+    { "type": "chore", "section": "Miscellaneous", "hidden": false },
+    { "type": "deps", "section": "Dependencies", "hidden": false },
+    { "type": "docs", "section": "Documentation", "hidden": false },
+    { "type": "ci", "section": "Continuous Integration", "hidden": false }
+  ]
+}
