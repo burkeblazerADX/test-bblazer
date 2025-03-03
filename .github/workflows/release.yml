@@ -1,26 +1,26 @@
-name: Create Release
+# name: Create Release
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-defaults:
-  run:
-    shell: bash
+# defaults:
+#   run:
+#     shell: bash
 
-permissions: {}
+# permissions: {}
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
 
-jobs:
-  release-pr:
-    name: Create Release PR
-    runs-on: ubuntu-latest
-    steps:
-      - uses: google-github-actions/release-please-action@v4
-        id: release-please
-        with:
-          token: ${{ secrets.RP_GH_TOKEN }}
+# jobs:
+#   release-pr:
+#     name: Create Release PR
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: google-github-actions/release-please-action@v4
+#         id: release-please
+#         with:
+#           token: ${{ secrets.RP_GH_TOKEN }}

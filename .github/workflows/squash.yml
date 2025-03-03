@@ -1,0 +1,87 @@
+name: Squash Commits on PR
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_call:
+    inputs:
+      pr-number:
+        description: The number of the PR to squash.
+        type: string
+        required: true
+      pr-comment-id:
+        description: The URL of the PR to squash.
+        type: string
+        required: true
+
+permissions: read-all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  squash-commits:
+    if: |
+      (github.event.issue.pull_request && github.event.comment.body == '/squash') ||
+      inputs.pr-number != ''
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Ensure full history for rebasing
+
+      - name: Get PR Details and Configure Git
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [[ -n "${{ inputs.pr-number }}" ]]; then
+            PR_URL="https://github.com/${{ github.repository }}/pull/${{ inputs.pr-number }}"
+          else
+            PR_URL="https://github.com/${{ github.repository }}/pull/${{ github.event.issue.number }}"
+          fi
+
+          PR_JSON=$(gh pr view "$PR_URL" --json baseRefName,headRefName,author)
+          BRANCH_NAME=$(echo "$PR_JSON" | jq -r .headRefName)
+          BASE_BRANCH=$(echo "$PR_JSON" | jq -r .baseRefName)
+          COMMENTER_LOGIN=$(echo "$PR_JSON" | jq -r .author.login)
+
+          echo "BRANCH_NAME=$BRANCH_NAME" >> "$GITHUB_ENV"
+          echo "BASE_BRANCH=$BASE_BRANCH" >> "$GITHUB_ENV"
+
+          git config --global user.name "$COMMENTER_LOGIN"
+          git config --global user.email "${COMMENTER_LOGIN}@users.noreply.github.com"
+
+      - name: Squash Commits
+        run: |
+          # Ensure branches are up to date
+          git checkout "$BASE_BRANCH"
+          git pull
+          git checkout "$BRANCH_NAME"
+          git pull
+
+          # Collect commit message and merge base
+          COMMIT_MSG=$(git log --reverse --format=%B "$BASE_BRANCH".."$BRANCH_NAME" | head -n 1)
+          MERGE_BASE=$(git merge-base "$BRANCH_NAME" "$BASE_BRANCH")
+
+          # Run reset and create a new squashed commit
+          git reset --soft "$MERGE_BASE"
+          git commit -am "$COMMIT_MSG"
+          git push -f
+
+      - name: React with 👍 to the /squash command
+        if: ${{ github.event_name == 'issue_comment' || inputs.pr-comment-id != '' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [[ -n "${{ inputs.pr-comment-id }}" ]]; then
+            COMMENT_ID="${{ inputs.pr-comment-id }}"
+          else
+            COMMENT_ID="${{ github.event.comment.id }}"
+          fi
+
+          gh api -X POST repos/${{ github.repository }}/issues/comments/$COMMENT_ID/reactions \
+            -f content='+1'
